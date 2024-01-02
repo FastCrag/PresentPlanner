@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'my_main_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyMainPage(),
     );
   }
 }
@@ -66,6 +67,10 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => MyChristmasPage(title: 'Christmas Page')),
+    // );
   }
 
   @override
@@ -105,6 +110,9 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            const Text(
+              'Main page',
+            ),
             const Text(
               'You have pushed the button this many times:',
             ),

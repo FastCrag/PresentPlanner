@@ -16,7 +16,7 @@ class _MyMainPageState extends State<MyMainPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -25,22 +25,25 @@ class _MyMainPageState extends State<MyMainPage>
     super.dispose();
   }
 
+  void _addPerson() {
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TabBar Sample'),
+        title: const Text('Present Planner'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const <Widget>[
             Tab(
-              icon: Icon(Icons.cloud_outlined),
+              icon: Icon(Icons.card_giftcard_sharp),
+              text: ("Birthdays"),
             ),
             Tab(
-              icon: Icon(Icons.beach_access_sharp),
-            ),
-            Tab(
-              icon: Icon(Icons.brightness_5_sharp),
+              icon: Icon(Icons.park_sharp),
+              text: ("Christmas"),
             ),
           ],
         ),
@@ -54,10 +57,12 @@ class _MyMainPageState extends State<MyMainPage>
           Center(
             child: Text("It's rainy here"),
           ),
-          Center(
-            child: Text("It's sunny here"),
-          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addPerson,
+        tooltip: 'Add a Person',
+        child: const Icon(Icons.person_add),
       ),
     );
   }
