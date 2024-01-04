@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:present_planner/birthday_add_person.dart';
+import 'package:present_planner/add_Birthday_Present.dart';
+import 'package:intl/intl.dart';
+import 'dart:core';
 
 class MyMainPage extends StatefulWidget {
   const MyMainPage({super.key});
@@ -12,22 +16,13 @@ class MyMainPage extends StatefulWidget {
 class _MyMainPageState extends State<MyMainPage>
     with TickerProviderStateMixin {
   late final TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  void _addPerson() {
-
-  }
+  var arrayNames = ['Craig', 'Maria'];
+  var arrayBudgets = [20.00, 30.00];
+  var arrayDates = ['01-03-2002', '05-03-2002'];
+  var arrayPresentNames = ['Bike', 'xbox', 'barbie'];
+  var arrayPresentAmount = [20.00, 30.00];
+  var arrayPresentComments = ['This is a really good present'];
+  var mapPresentCount = {0:2, 1:1};
 
   @override
   Widget build(BuildContext context) {
@@ -50,19 +45,256 @@ class _MyMainPageState extends State<MyMainPage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const <Widget>[
-          Center(
-            child: Text("It's cloudy here"),
+        children: <Widget>[
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                ...List.generate(
+                arrayNames.length,
+                    (index) => buildAllPersonCards(index),
+                ),
+                addNewBirthdayCard()
+              ]
+            ),
           ),
-          Center(
+          const Center(
             child: Text("It's rainy here"),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "0",
         onPressed: _addPerson,
         tooltip: 'Add a Person',
         child: const Icon(Icons.person_add),
+      ),
+    );
+  }
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _addPerson() async {
+    // Use the Future returned by Navigator.push
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddBirthdayPersonPage(
+          arrayNames: arrayNames,
+          arrayDates: arrayDates,
+          arrayBudgets: arrayBudgets,
+        ),
+      ),
+    );
+
+    // Handle the result if needed
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        arrayNames = List.from(result['arrayNames']);
+        arrayDates = List.from(result['arrayDates']);
+        arrayBudgets = List.from(result['arrayBudgets']);
+      });
+    }
+  }
+
+  void _addBirthdayPresent() async {
+    // Use the Future returned by Navigator.push
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddBirthdayPresentPage(
+          arrayNames: arrayNames,
+          arrayDates: arrayDates,
+          arrayBudgets: arrayBudgets,
+        ),
+      ),
+    );
+
+    // Handle the result if needed
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        arrayNames = List.from(result['arrayNames']);
+        arrayDates = List.from(result['arrayDates']);
+        arrayBudgets = List.from(result['arrayBudgets']);
+      });
+    }
+  }
+
+  int daysUntilDate(int index) {
+      // Assuming the input date is in the format "MM/dd"
+      DateTime currentDate = DateTime.now();
+      DateTime targetDate = DateTime(
+        currentDate.year,
+        DateTime.parse(arrayDates[index]).month,
+        DateTime.parse(arrayDates[index]).day,
+      );
+
+      // If the target date is in the past, add a year to it
+      if (targetDate.isBefore(currentDate)) {
+        targetDate = DateTime(currentDate.year + 1, targetDate.month, targetDate.day);
+      }
+
+      // Calculate the difference in days
+      Duration difference = targetDate.difference(currentDate);
+      return difference.inDays;
+  }
+
+  Widget addNewBirthdayCard() {
+    return Card(
+      elevation: 5,
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        splashColor: Colors.green,
+        onTap: () {
+          _addPerson();
+        },
+        child: SizedBox(
+          width: 350,
+          height: 75,
+          child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Row(
+                    children: <Widget>[
+                      Icon(Icons.person_add),
+                      Center(child: Text(' Add a New Birthday ')),
+                    ]
+                ),
+              )
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildAllPresentCards(int index) {
+    return Card(
+      elevation: 5,
+      clipBehavior: Clip.hardEdge,
+      color: Colors.lightGreen,
+      child: InkWell(
+        splashColor: Colors.lightGreenAccent,
+        onTap: () {
+          // _addPerson(); // Uncomment or replace with your desired action
+        },
+        child: SizedBox(
+          width: 300,
+          height: 50,
+          child: Container(
+            padding: const EdgeInsets.all(15.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(arrayPresentNames[index]),
+                Text('\$' + arrayBudgets[index].toString()),
+                Text('Mark as Bought?'),
+                Icon(Icons.more_vert_sharp),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildAllPersonCards(int index) {
+    // Convert your date string to DateTime
+    DateTime dateTime = DateTime.parse(arrayDates[index]);
+    // Format the date in the desired format (MM/dd/yyyy)
+    String formattedDate = DateFormat('MM/dd/yyyy').format(dateTime);
+
+    return Card(
+      elevation: 5,
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        splashColor: Colors.green,
+        onTap: () {
+          // _addPerson(); // Uncomment or replace with your desired action
+        },
+        child: SizedBox(
+          width: 350,
+          child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: const EdgeInsets.all(15.0),
+              child: Column(
+                  mainAxisSize: MainAxisSize.min, // Set mainAxisSize to min
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(arrayNames[index]),
+                            Text(formattedDate),
+                          ],
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text('Budget: \$' + arrayBudgets[index].toString()),
+                          ],
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(Icons.more_vert_sharp),
+                            Text('Days Left: ' + daysUntilDate(index).toString()),
+                            Text('Total: '),
+                          ],
+                        ),
+                      ],
+                    ),
+                    ...List.generate(
+                      mapPresentCount[index]??0.toInt(),
+                          (index) => buildAllPresentCards(index),
+                    ),
+                    buildAllPresentCards(index),
+                    Card(
+                      elevation: 5,
+                      clipBehavior: Clip.hardEdge,
+                      color: Colors.lightGreen,
+                      child: InkWell(
+                        splashColor: Colors.lightGreenAccent,
+                        onTap: () {
+                          _addBirthdayPresent();
+                        },
+                        child: SizedBox(
+                          width: 300,
+                          height: 50,
+                          child: Container(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add),
+                                Text(' Add another Present'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+              ]
+
+              )
+
+
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:present_planner/my_main_page.dart';
 
-class AddBirthdayPersonPage extends StatefulWidget {
+class AddBirthdayPresentPage extends StatefulWidget {
   final List<String> arrayNames;
   final List<String> arrayDates;
   final List<double> arrayBudgets;
 
-  const AddBirthdayPersonPage({
+  const AddBirthdayPresentPage({
     Key? key,
     required this.arrayNames,
     required this.arrayDates,
@@ -14,10 +14,10 @@ class AddBirthdayPersonPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<AddBirthdayPersonPage> createState() => _AddBirthdayPersonPageState();
+  State<AddBirthdayPresentPage> createState() => _AddBirthdayPresentPageState();
 }
 
-class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
+class _AddBirthdayPresentPageState extends State<AddBirthdayPresentPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _budgetController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
@@ -27,7 +27,7 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text('Add a New Birthday'),
+          title: const Text('Add a New Present'),
         ),
         body: Center(
           child: Column(
@@ -44,7 +44,7 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
                   keyboardType: TextInputType.name,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Add a Name',
+                    labelText: 'Present Name',
                   ),
                 ),
               ),
@@ -56,7 +56,7 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Add a Budget',
+                    labelText: 'Present Amount',
                   ),
                 ),
               ),
@@ -64,23 +64,13 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
               Container(
                 margin: const EdgeInsets.all(20),
                 child: TextField(
-                  controller: _dateController,
+                  controller: _nameController,
                   obscureText: false,
-                  decoration: const InputDecoration(
-                    labelText: 'Add a Birthdate',
-                    filled: true,
-                    prefixIcon: Icon(Icons.calendar_today_outlined),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue)
-                    ),
+                  keyboardType: TextInputType.name,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Comments/Add a link',
                   ),
-                  readOnly: true,
-                  onTap: (){
-                    _selectDate();
-                  },
                 ),
               ),
             ],
@@ -107,21 +97,6 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
     );
   }
 
-  Future<void> _selectDate() async {
-    DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(1900),
-        lastDate: DateTime.now()
-    );
-
-    if (picked != null){
-      setState(() {
-        _dateController.text = picked.toString().split(" ")[0];
-        print(_dateController.text);
-      });
-    }
-  }
   void cancelClicked() {
     Navigator.pop(context);
   }
