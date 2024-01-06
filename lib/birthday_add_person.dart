@@ -2,16 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:present_planner/my_main_page.dart';
 
 class AddBirthdayPersonPage extends StatefulWidget {
-  final List<String> arrayNames;
-  final List<String> arrayDates;
-  final List<double> arrayBudgets;
   final List arrayPersonCardValues;
 
   const AddBirthdayPersonPage({
     Key? key,
-    required this.arrayNames,
-    required this.arrayDates,
-    required this.arrayBudgets,
     required this.arrayPersonCardValues,
   }) : super(key: key);
 
@@ -138,16 +132,7 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
 
     widget.arrayPersonCardValues.add(new PersonCardValues(name: newName, budget: newBudget, birthDate: selectedDate, presents: newList));
 
-    // Update the arrays in MyMainPage
-      widget.arrayNames.add(newName);
-      widget.arrayDates.add(selectedDate.toString().split(" ")[0]);
-      widget.arrayBudgets.add(newBudget);
-
     // Pass back the updated lists
-    Navigator.pop(context, {
-      'arrayNames': widget.arrayNames,
-      'arrayDates': widget.arrayDates,
-      'arrayBudgets': widget.arrayBudgets,
-    });
+    Navigator.pop(context, true);
   }
 }

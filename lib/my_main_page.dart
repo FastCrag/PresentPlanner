@@ -19,13 +19,6 @@ class _MyMainPageState extends State<MyMainPage>
     with TickerProviderStateMixin {
   late final TabController _tabController;
   var arrayPersonCardValues = [];
-  var arrayNames = ['Craig', 'Maria'];
-  var arrayBudgets = [20.00, 30.00];
-  var arrayDates = ['2002-05-31', '2002-06-10'];
-  var arrayPresentNames = ['Bike', 'xbox', 'barbie'];
-  var arrayPresentAmount = [20.00, 30.00];
-  var arrayPresentComments = ['This is a really good present'];
-  var mapPresentCount = {0:2, 1:1};
 
   @override
   Widget build(BuildContext context) {
@@ -91,43 +84,30 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => AddBirthdayPersonPage(
-          arrayNames: arrayNames,
-          arrayDates: arrayDates,
-          arrayBudgets: arrayBudgets,
           arrayPersonCardValues: arrayPersonCardValues,
         ),
       ),
     );
-
-    // Handle the result if needed
-    if (result != null && result is Map<String, dynamic>) {
+    if (result != null) {
       setState(() {
-        arrayNames = List.from(result['arrayNames']);
-        arrayDates = List.from(result['arrayDates']);
-        arrayBudgets = List.from(result['arrayBudgets']);
+        build;
       });
     }
   }
 
-  void _addBirthdayPresent() async {
+  void _addBirthdayPresent(int personIndex) async {
     // Use the Future returned by Navigator.push
     var result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AddBirthdayPresentPage(
-          arrayNames: arrayNames,
-          arrayDates: arrayDates,
-          arrayBudgets: arrayBudgets,
+          arrayPresentCardValues: arrayPersonCardValues[personIndex].presents,
         ),
       ),
     );
-
-    // Handle the result if needed
-    if (result != null && result is Map<String, dynamic>) {
+    if (result != null) {
       setState(() {
-        arrayNames = List.from(result['arrayNames']);
-        arrayDates = List.from(result['arrayDates']);
-        arrayBudgets = List.from(result['arrayBudgets']);
+        build;
       });
     }
   }
@@ -179,7 +159,7 @@ class _MyMainPageState extends State<MyMainPage>
     );
   }
 
-  Widget buildAllPresentCards(int index) {
+  Widget buildAllPresentCards(int personIndex, int presentIndex) {
     return Card(
       elevation: 5,
       clipBehavior: Clip.hardEdge,
@@ -197,8 +177,8 @@ class _MyMainPageState extends State<MyMainPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text(arrayPresentNames[index]),
-                Text('\$' + arrayBudgets[index].toString()),
+                Text(arrayPersonCardValues[personIndex].presents[presentIndex].presentName),
+                Text('\$' + arrayPersonCardValues[personIndex].presents[presentIndex].amount.toString()),
                 Text('Mark as Bought?'),
                 Icon(Icons.more_vert_sharp),
               ],
@@ -209,11 +189,12 @@ class _MyMainPageState extends State<MyMainPage>
     );
   }
 
-  Widget buildAllPersonCards(int index) {
+  Widget buildAllPersonCards(int personIndex) {
     // Convert your date string to DateTime
-    DateTime dateTime = arrayPersonCardValues[index].birthDate;
+    DateTime dateTime = arrayPersonCardValues[personIndex].birthDate;
     // Format the date in the desired format (MM/dd/yyyy)
     String formattedDate = DateFormat('MM/dd/yyyy').format(dateTime);
+
 
     return Card(
       elevation: 5,
@@ -241,31 +222,30 @@ class _MyMainPageState extends State<MyMainPage>
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text(arrayPersonCardValues[index].name),
+                            Text(arrayPersonCardValues[personIndex].name),
                             Text(formattedDate),
                           ],
                         ),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text('Budget: \$' + arrayPersonCardValues[index].budget.toString()),
+                            Text('Budget: \$' + arrayPersonCardValues[personIndex].budget.toString()),
                           ],
                         ),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Icon(Icons.more_vert_sharp),
-                            Text('Days Left: ' + daysUntilDate(index).toString()),
+                            Text('Days Left: ' + daysUntilDate(personIndex).toString()),
                             Text('Total: '),
                           ],
                         ),
                       ],
                     ),
                     ...List.generate(
-                      mapPresentCount[index]??0.toInt(),
-                          (index) => buildAllPresentCards(index),
+                      arrayPersonCardValues[personIndex].presents.length,
+                          (presentIndex) => buildAllPresentCards(personIndex, presentIndex),
                     ),
-                    buildAllPresentCards(index),
                     Card(
                       elevation: 5,
                       clipBehavior: Clip.hardEdge,
@@ -273,7 +253,7 @@ class _MyMainPageState extends State<MyMainPage>
                       child: InkWell(
                         splashColor: Colors.lightGreenAccent,
                         onTap: () {
-                          _addBirthdayPresent();
+                          _addBirthdayPresent(personIndex);
                         },
                         child: SizedBox(
                           width: 300,
@@ -306,36 +286,73 @@ class _MyMainPageState extends State<MyMainPage>
 
 class PersonCardValues{
   String name = '';
-  String get PersonName {
+  String get personName {
     return name;
   }
-  void set PersonName(String name) {
+  void set personName(String name) {
     this.name = name;
   }
 
   double budget= 0;
-  double get PersonBudget {
+  double get personBudget {
     return budget;
   }
-  void set PersonBudget(double budget) {
+  void set personBudget(double budget) {
     this.budget = budget;
   }
 
   DateTime birthDate = DateTime.now();
-  DateTime get PersonBirthDate {
+  DateTime get personBirthDate {
     return birthDate;
   }
-  void set PersonBirthDate(DateTime birthDate) {
+  void set personBirthDate(DateTime birthDate) {
     this.birthDate = birthDate;
   }
 
   var presents = [];
-  List get PersonPresents {
+  List get personPresents {
     return presents;
   }
-  void set PersonPresents(List presents) {
+  void set personPresents(List presents) {
     this.presents = presents;
   }
   PersonCardValues({required this.name, required this.budget, required this.birthDate, required this.presents});
+
+}
+
+class PresentCardValues{
+  String presentName = '';
+  String get presentNameGetter {
+    return presentName;
+  }
+  void set presentNameGetter(String name) {
+    this.presentName = presentName;
+  }
+
+  String comments = '';
+  String get presentComments {
+    return comments;
+  }
+  void set presentComments(String comments) {
+    this.comments = comments;
+  }
+
+  double amount= 0;
+  double get presentAmount {
+    return amount;
+  }
+  void set presentAmount(double budget) {
+    this.amount = amount;
+  }
+
+  bool bought;
+  bool get presentBought {
+    return bought;
+  }
+  void set presentBought(bool bought) {
+    this.bought = bought;
+  }
+
+  PresentCardValues({required this.presentName, required this.amount, required this.bought, required this.comments});
 
 }
