@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:present_planner/birthday_add_person.dart';
 import 'package:present_planner/add_Birthday_Present.dart';
@@ -16,9 +18,10 @@ class MyMainPage extends StatefulWidget {
 class _MyMainPageState extends State<MyMainPage>
     with TickerProviderStateMixin {
   late final TabController _tabController;
+  var arrayPersonCardValues = [];
   var arrayNames = ['Craig', 'Maria'];
   var arrayBudgets = [20.00, 30.00];
-  var arrayDates = ['01-03-2002', '05-03-2002'];
+  var arrayDates = ['2002-05-31', '2002-06-10'];
   var arrayPresentNames = ['Bike', 'xbox', 'barbie'];
   var arrayPresentAmount = [20.00, 30.00];
   var arrayPresentComments = ['This is a really good present'];
@@ -50,7 +53,7 @@ class _MyMainPageState extends State<MyMainPage>
             child: Column(
               children: [
                 ...List.generate(
-                arrayNames.length,
+                arrayPersonCardValues.length,
                     (index) => buildAllPersonCards(index),
                 ),
                 addNewBirthdayCard()
@@ -91,6 +94,7 @@ class _MyMainPageState extends State<MyMainPage>
           arrayNames: arrayNames,
           arrayDates: arrayDates,
           arrayBudgets: arrayBudgets,
+          arrayPersonCardValues: arrayPersonCardValues,
         ),
       ),
     );
@@ -133,8 +137,8 @@ class _MyMainPageState extends State<MyMainPage>
       DateTime currentDate = DateTime.now();
       DateTime targetDate = DateTime(
         currentDate.year,
-        DateTime.parse(arrayDates[index]).month,
-        DateTime.parse(arrayDates[index]).day,
+        arrayPersonCardValues[index].birthDate.month,
+        arrayPersonCardValues[index].birthDate.day,
       );
 
       // If the target date is in the past, add a year to it
@@ -207,7 +211,7 @@ class _MyMainPageState extends State<MyMainPage>
 
   Widget buildAllPersonCards(int index) {
     // Convert your date string to DateTime
-    DateTime dateTime = DateTime.parse(arrayDates[index]);
+    DateTime dateTime = arrayPersonCardValues[index].birthDate;
     // Format the date in the desired format (MM/dd/yyyy)
     String formattedDate = DateFormat('MM/dd/yyyy').format(dateTime);
 
@@ -237,14 +241,14 @@ class _MyMainPageState extends State<MyMainPage>
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text(arrayNames[index]),
+                            Text(arrayPersonCardValues[index].name),
                             Text(formattedDate),
                           ],
                         ),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text('Budget: \$' + arrayBudgets[index].toString()),
+                            Text('Budget: \$' + arrayPersonCardValues[index].budget.toString()),
                           ],
                         ),
                         Column(
@@ -298,4 +302,40 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
   }
+}
+
+class PersonCardValues{
+  String name = '';
+  String get PersonName {
+    return name;
+  }
+  void set PersonName(String name) {
+    this.name = name;
+  }
+
+  double budget= 0;
+  double get PersonBudget {
+    return budget;
+  }
+  void set PersonBudget(double budget) {
+    this.budget = budget;
+  }
+
+  DateTime birthDate = DateTime.now();
+  DateTime get PersonBirthDate {
+    return birthDate;
+  }
+  void set PersonBirthDate(DateTime birthDate) {
+    this.birthDate = birthDate;
+  }
+
+  var presents = [];
+  List get PersonPresents {
+    return presents;
+  }
+  void set PersonPresents(List presents) {
+    this.presents = presents;
+  }
+  PersonCardValues({required this.name, required this.budget, required this.birthDate, required this.presents});
+
 }

@@ -5,12 +5,14 @@ class AddBirthdayPersonPage extends StatefulWidget {
   final List<String> arrayNames;
   final List<String> arrayDates;
   final List<double> arrayBudgets;
+  final List arrayPersonCardValues;
 
   const AddBirthdayPersonPage({
     Key? key,
     required this.arrayNames,
     required this.arrayDates,
     required this.arrayBudgets,
+    required this.arrayPersonCardValues,
   }) : super(key: key);
 
   @override
@@ -129,9 +131,12 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
   void saveClicked() {
     String newName = _nameController.text;
     double newBudget = double.parse(_budgetController.text);
+    List newList = [];
 
     // Assuming you have a way to get the selected date as DateTime
     DateTime selectedDate = DateTime.parse(_dateController.text);
+
+    widget.arrayPersonCardValues.add(new PersonCardValues(name: newName, budget: newBudget, birthDate: selectedDate, presents: newList));
 
     // Update the arrays in MyMainPage
       widget.arrayNames.add(newName);
