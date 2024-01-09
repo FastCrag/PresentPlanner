@@ -1,8 +1,8 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:present_planner/birthday_add_person.dart';
 import 'package:present_planner/add_Birthday_Present.dart';
+import 'package:present_planner/edit_Birthday_Present.dart';
+import 'package:present_planner/edit_Birthday_Person.dart';
 import 'package:intl/intl.dart';
 import 'dart:core';
 
@@ -60,7 +60,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: "0",
-        onPressed: _addPerson,
+        onPressed: _addBirthdayPerson,
         tooltip: 'Add a Person',
         child: const Icon(Icons.person_add),
       ),
@@ -78,13 +78,44 @@ class _MyMainPageState extends State<MyMainPage>
     super.dispose();
   }
 
-  void _addPerson() async {
+  double calcTotalPresentValue(int personIndex) {
+    double totalAmount = 0;
+    for (var i = 0; i < arrayPersonCardValues[personIndex].presents.length; i++) {
+      totalAmount += arrayPersonCardValues[personIndex].presents[i].presentAmount;
+    }
+    return totalAmount;
+  }
+
+  double calcBudgetLeft(personIndex) {
+    double budgetLeft = 0;
+    budgetLeft = (arrayPersonCardValues[personIndex].budget) - (calcTotalPresentValue(personIndex));
+    return budgetLeft;
+  }
+
+  void _addBirthdayPerson() async {
     // Use the Future returned by Navigator.push
     var result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AddBirthdayPersonPage(
           arrayPersonCardValues: arrayPersonCardValues,
+        ),
+      ),
+    );
+    if (result != null) {
+      setState(() {
+        build;
+      });
+    }
+  }
+
+  void _editBirthdayPerson(personIndex) async {
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditBirthdayPersonPage(
+          arrayPersonCardValues: arrayPersonCardValues,
+          personIndex: personIndex,
         ),
       ),
     );
@@ -102,6 +133,23 @@ class _MyMainPageState extends State<MyMainPage>
       MaterialPageRoute(
         builder: (context) => AddBirthdayPresentPage(
           arrayPresentCardValues: arrayPersonCardValues[personIndex].presents,
+        ),
+      ),
+    );
+    if (result != null) {
+      setState(() {
+        build;
+      });
+    }
+  }
+  void _editBirthdayPresent(personIndex, presentIndex) async {
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditBirthdayPresentPage(
+          presentToEdit: arrayPersonCardValues[personIndex].presents[presentIndex],
+          arrayPresentCardValues: arrayPersonCardValues[personIndex].presents,
+          presentIndex: presentIndex,
         ),
       ),
     );
@@ -138,7 +186,7 @@ class _MyMainPageState extends State<MyMainPage>
       child: InkWell(
         splashColor: Colors.green,
         onTap: () {
-          _addPerson();
+          _addBirthdayPerson();
         },
         child: SizedBox(
           width: 350,
@@ -160,14 +208,22 @@ class _MyMainPageState extends State<MyMainPage>
   }
 
   Widget buildAllPresentCards(int personIndex, int presentIndex) {
+
+    Color _presentCardColor;
+    if (arrayPersonCardValues[personIndex].presents[presentIndex].bought) {
+      _presentCardColor = Colors.lightGreen;
+    }
+    else {
+      _presentCardColor = Colors.red;
+    }
     return Card(
       elevation: 5,
       clipBehavior: Clip.hardEdge,
-      color: Colors.lightGreen,
+      color: _presentCardColor,
       child: InkWell(
         splashColor: Colors.lightGreenAccent,
         onTap: () {
-          // _addPerson(); // Uncomment or replace with your desired action
+          _editBirthdayPresent(personIndex, presentIndex);
         },
         child: SizedBox(
           width: 300,
@@ -177,9 +233,17 @@ class _MyMainPageState extends State<MyMainPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text(arrayPersonCardValues[personIndex].presents[presentIndex].presentName),
+                Text(arrayPersonCardValues[personIndex].presents[presentIndex].presentName + ': '),
                 Text('\$' + arrayPersonCardValues[personIndex].presents[presentIndex].amount.toString()),
                 Text('Mark as Bought?'),
+                Checkbox(
+                    value: arrayPersonCardValues[personIndex].presents[presentIndex].bought,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        arrayPersonCardValues[personIndex].presents[presentIndex].bought = value;
+                      });
+                    },
+                ),
                 Icon(Icons.more_vert_sharp),
               ],
             ),
@@ -202,7 +266,7 @@ class _MyMainPageState extends State<MyMainPage>
       child: InkWell(
         splashColor: Colors.green,
         onTap: () {
-          // _addPerson(); // Uncomment or replace with your desired action
+          _editBirthdayPerson(personIndex);
         },
         child: SizedBox(
           width: 350,
@@ -224,12 +288,15 @@ class _MyMainPageState extends State<MyMainPage>
                           children: [
                             Text(arrayPersonCardValues[personIndex].name),
                             Text(formattedDate),
+                            Text('Presents: '),
                           ],
                         ),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text('Budget: \$' + arrayPersonCardValues[personIndex].budget.toString()),
+                            Text('Max Budget: \$' + arrayPersonCardValues[personIndex].budget.toString()),
+                            Text('Present Total: ' + calcTotalPresentValue(personIndex).toString()),
+                            Text('Budget Left: ' + calcBudgetLeft(personIndex).toString()),
                           ],
                         ),
                         Column(
@@ -237,7 +304,6 @@ class _MyMainPageState extends State<MyMainPage>
                           children: [
                             Icon(Icons.more_vert_sharp),
                             Text('Days Left: ' + daysUntilDate(personIndex).toString()),
-                            Text('Total: '),
                           ],
                         ),
                       ],
@@ -325,7 +391,7 @@ class PresentCardValues{
   String get presentNameGetter {
     return presentName;
   }
-  void set presentNameGetter(String name) {
+  void set presentNameGetter(String presentName) {
     this.presentName = presentName;
   }
 
@@ -341,15 +407,15 @@ class PresentCardValues{
   double get presentAmount {
     return amount;
   }
-  void set presentAmount(double budget) {
+  void set presentAmount(double amount) {
     this.amount = amount;
   }
 
-  bool bought;
-  bool get presentBought {
+  bool? bought;
+  bool? get presentBought {
     return bought;
   }
-  void set presentBought(bool bought) {
+  void set presentBought(bool? bought) {
     this.bought = bought;
   }
 

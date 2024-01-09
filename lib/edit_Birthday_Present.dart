@@ -1,30 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:present_planner/my_main_page.dart';
 
-class AddBirthdayPresentPage extends StatefulWidget {
+class EditBirthdayPresentPage extends StatefulWidget {
+  final PresentCardValues presentToEdit;
   final List arrayPresentCardValues;
+  final int presentIndex;
 
-  const AddBirthdayPresentPage({
+  const EditBirthdayPresentPage({
     Key? key,
+    required this.presentToEdit,
     required this.arrayPresentCardValues,
+    required this.presentIndex,
   }) : super(key: key);
 
   @override
-  State<AddBirthdayPresentPage> createState() => _AddBirthdayPresentPageState();
+  State<EditBirthdayPresentPage> createState() => _EditBirthdayPresentPageState();
 }
 
-class _AddBirthdayPresentPageState extends State<AddBirthdayPresentPage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _commentController = TextEditingController();
-  bool? isChecked = false;
+class _EditBirthdayPresentPageState extends State<EditBirthdayPresentPage> {
+  late TextEditingController _nameController = TextEditingController(text: widget.presentToEdit.presentName);
+  late TextEditingController _amountController = TextEditingController(text: widget.presentToEdit.amount.toString());
+  late TextEditingController _commentController = TextEditingController(text: widget.presentToEdit.comments);
+  late bool? isChecked = widget.presentToEdit.bought;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text('Add a New Present'),
+          title: const Text('Edit Present'),
         ),
         body: Center(
           child: Container(
@@ -33,11 +37,11 @@ class _AddBirthdayPresentPageState extends State<AddBirthdayPresentPage> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 const Text(
-                  'Please Fill Out All the Information',
+                  'Please Change Any Necessary Information',
                 ),
                 Container(
                   margin: const EdgeInsets.all(20),
-                  child: TextField(
+                  child: TextFormField(
                     controller: _nameController,
                     obscureText: false,
                     keyboardType: TextInputType.name,
@@ -79,12 +83,12 @@ class _AddBirthdayPresentPageState extends State<AddBirthdayPresentPage> {
                       children: <Widget>[
                         Text('Have you bought this item already?'),
                         Checkbox(
-                            value: isChecked,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                isChecked = value;
-                              });
-                            },
+                          value: isChecked,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              isChecked = value;
+                            });
+                          },
                         )
                       ]
                   ),
@@ -93,29 +97,52 @@ class _AddBirthdayPresentPageState extends State<AddBirthdayPresentPage> {
             ),
           ),
         ),
-        floatingActionButton: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+        floatingActionButton: Container(
+        margin: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+
+          child:Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               FloatingActionButton(
                 heroTag: "1",
-                child: Text('Save'),
-                onPressed: () => saveClicked(),
+                backgroundColor: Colors.red[200],
+                child: Text('Delete'),
+                onPressed: () => deleteClicked(),
               ),
-              SizedBox(
-                width: 10,
+              Container(
+                child: Row(
+                  children:[
+                    FloatingActionButton(
+                      heroTag: "3",
+                      backgroundColor: Colors.white12,
+                      child: Text('Cancel'),
+                      onPressed: () => cancelClicked(),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    FloatingActionButton(
+                      heroTag: "2",
+                      child: Text('Save'),
+                      onPressed: () => saveClicked(),
+                    ),
+
+                ]
+                ),
               ),
-              FloatingActionButton(
-                heroTag: "2",
-                child: Text('Cancel'),
-                onPressed: () => cancelClicked(),
-              )
             ]
-        )
+        ),
+        ),
     );
   }
 
   void cancelClicked() {
     Navigator.pop(context);
+  }
+
+  void deleteClicked() {
+    widget.arrayPresentCardValues.removeAt(widget.presentIndex);
+    Navigator.pop(context, true);
   }
 
   void saveClicked() {
@@ -124,8 +151,11 @@ class _AddBirthdayPresentPageState extends State<AddBirthdayPresentPage> {
     String newComment = _commentController.text;
     bool? newBought = isChecked;
 
-    // Update the arrays in the specific person
-    widget.arrayPresentCardValues.add(PresentCardValues(presentName: newName, amount: newAmount, bought: newBought, comments: newComment));
+    // update the values for the present
+    widget.presentToEdit.presentName = newName;
+    widget.presentToEdit.amount = newAmount;
+    widget.presentToEdit.comments = newComment;
+    widget.presentToEdit.bought = newBought;
 
     // Pass back the updated lists
     Navigator.pop(context, true);
