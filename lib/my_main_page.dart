@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:present_planner/birthday_add_person.dart';
-import 'package:present_planner/add_Birthday_Present.dart';
-import 'package:present_planner/edit_Birthday_Present.dart';
+import 'package:present_planner/add_Birthday_Person.dart';
+import 'package:present_planner/add_Present.dart';
+import 'package:present_planner/edit_Present.dart';
 import 'package:present_planner/edit_Birthday_Person.dart';
+import 'package:present_planner/add_Christmas_Person.dart';
+import 'package:present_planner/edit_Christmas_Person.dart';
 import 'package:intl/intl.dart';
 import 'dart:core';
 
@@ -18,7 +20,9 @@ class MyMainPage extends StatefulWidget {
 class _MyMainPageState extends State<MyMainPage>
     with TickerProviderStateMixin {
   late final TabController _tabController;
-  var arrayPersonCardValues = [];
+  var arrayBirthdayPersonCardValues = [];
+  var arrayChristmasPersonCardValues = [];
+  late AllValues allValues = AllValues(birthdayValues: arrayBirthdayPersonCardValues, christmasValues: arrayChristmasPersonCardValues);
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +50,30 @@ class _MyMainPageState extends State<MyMainPage>
             child: Column(
               children: [
                 ...List.generate(
-                arrayPersonCardValues.length,
-                    (index) => buildAllPersonCards(index),
+                arrayBirthdayPersonCardValues.length,
+                    (index) => buildAllBirthdayPersonCards(index),
                 ),
                 addNewBirthdayCard()
               ]
             ),
           ),
-          const Center(
-            child: Text("It's rainy here"),
+          SingleChildScrollView(
+            child: Column(
+                children: [
+                  Text(
+                      'Days Until Christmas: ' + daysUntilDate(DateTime(2000, 12, 25)).toString(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 25,
+                    ),
+                  ),
+                  ...List.generate(
+                    arrayChristmasPersonCardValues.length,
+                        (index) => buildAllChristmasPersonCards(index),
+                  ),
+                  addNewChristmasCard()
+                ]
+            ),
           ),
         ],
       ),
@@ -78,18 +97,68 @@ class _MyMainPageState extends State<MyMainPage>
     super.dispose();
   }
 
-  double calcTotalPresentValue(int personIndex) {
+  double calcTotalPresentValue(List presents) {
     double totalAmount = 0;
-    for (var i = 0; i < arrayPersonCardValues[personIndex].presents.length; i++) {
-      totalAmount += arrayPersonCardValues[personIndex].presents[i].presentAmount;
+    for (var i = 0; i < presents.length; i++) {
+      totalAmount += presents[i].presentAmount;
     }
     return totalAmount;
   }
 
-  double calcBudgetLeft(personIndex) {
+  double calcBudgetLeft(List arrayCardValues, personIndex) {
     double budgetLeft = 0;
-    budgetLeft = (arrayPersonCardValues[personIndex].budget) - (calcTotalPresentValue(personIndex));
+    budgetLeft = (arrayCardValues[personIndex].budget) - (calcTotalPresentValue(arrayCardValues[personIndex].presents));
     return budgetLeft;
+  }
+
+  Text returnBudgetLeft(double budgetLeft) {
+    Color textColor = Colors.black;
+    if (budgetLeft < 0) {
+      textColor = Colors.red;
+    }
+    return Text(
+        'Budget Left: ' + budgetLeft.toStringAsFixed(2),
+        style: TextStyle(
+        color: textColor,
+        )
+    );
+  }
+
+  Future<void> _editPresent(personIndex, presentIndex, presents) async {
+    if (arrayBirthdayPersonCardValues[personIndex].presents == presents) {
+      var result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditPresentPage(
+            presentToEdit: arrayBirthdayPersonCardValues[personIndex].presents[presentIndex],
+            arrayPresentCardValues: arrayBirthdayPersonCardValues[personIndex].presents,
+            presentIndex: presentIndex,
+          ),
+        ),
+      );
+      if (result != null) {
+        setState(() {
+          build;
+        });
+      }
+    }
+    else {
+      var result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditPresentPage(
+            presentToEdit: arrayChristmasPersonCardValues[personIndex].presents[presentIndex],
+            arrayPresentCardValues: arrayChristmasPersonCardValues[personIndex].presents,
+            presentIndex: presentIndex,
+          ),
+        ),
+      );
+      if (result != null) {
+        setState(() {
+          build;
+        });
+      }
+    }
   }
 
   void _addBirthdayPerson() async {
@@ -98,7 +167,7 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => AddBirthdayPersonPage(
-          arrayPersonCardValues: arrayPersonCardValues,
+          arrayPersonCardValues: arrayBirthdayPersonCardValues,
         ),
       ),
     );
@@ -114,7 +183,7 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => EditBirthdayPersonPage(
-          arrayPersonCardValues: arrayPersonCardValues,
+          arrayPersonCardValues: arrayBirthdayPersonCardValues,
           personIndex: personIndex,
         ),
       ),
@@ -131,25 +200,8 @@ class _MyMainPageState extends State<MyMainPage>
     var result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddBirthdayPresentPage(
-          arrayPresentCardValues: arrayPersonCardValues[personIndex].presents,
-        ),
-      ),
-    );
-    if (result != null) {
-      setState(() {
-        build;
-      });
-    }
-  }
-  void _editBirthdayPresent(personIndex, presentIndex) async {
-    var result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditBirthdayPresentPage(
-          presentToEdit: arrayPersonCardValues[personIndex].presents[presentIndex],
-          arrayPresentCardValues: arrayPersonCardValues[personIndex].presents,
-          presentIndex: presentIndex,
+        builder: (context) => AddPresentPage(
+          arrayPresentCardValues: arrayBirthdayPersonCardValues[personIndex].presents,
         ),
       ),
     );
@@ -160,13 +212,64 @@ class _MyMainPageState extends State<MyMainPage>
     }
   }
 
-  int daysUntilDate(int index) {
+  void _addChristmasPerson() async {
+    // Use the Future returned by Navigator.push
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddChristmasPersonPage(
+          arrayPersonCardValues: arrayChristmasPersonCardValues,
+        ),
+      ),
+    );
+    if (result != null) {
+      setState(() {
+        build;
+      });
+    }
+  }
+
+  void _editChristmasPerson(personIndex) async {
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditChristmasPersonPage(
+          arrayPersonCardValues: arrayChristmasPersonCardValues,
+          personIndex: personIndex,
+        ),
+      ),
+    );
+    if (result != null) {
+      setState(() {
+        build;
+      });
+    }
+  }
+
+  void _addChristmasPresent(int personIndex) async {
+    // Use the Future returned by Navigator.push
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddPresentPage(
+          arrayPresentCardValues: arrayChristmasPersonCardValues[personIndex].presents,
+        ),
+      ),
+    );
+    if (result != null) {
+      setState(() {
+        build;
+      });
+    }
+  }
+
+  int daysUntilDate(DateTime inputDate) {
       // Assuming the input date is in the format "MM/dd"
       DateTime currentDate = DateTime.now();
       DateTime targetDate = DateTime(
         currentDate.year,
-        arrayPersonCardValues[index].birthDate.month,
-        arrayPersonCardValues[index].birthDate.day,
+        inputDate.month,
+        inputDate.day,
       );
 
       // If the target date is in the past, add a year to it
@@ -207,10 +310,38 @@ class _MyMainPageState extends State<MyMainPage>
     );
   }
 
-  Widget buildAllPresentCards(int personIndex, int presentIndex) {
+  Widget addNewChristmasCard() {
+    return Card(
+      elevation: 5,
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        splashColor: Colors.green,
+        onTap: () {
+          _addChristmasPerson();
+        },
+        child: SizedBox(
+          width: 350,
+          height: 75,
+          child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Row(
+                    children: <Widget>[
+                      Icon(Icons.person_add),
+                      Center(child: Text(' Add a New Person ')),
+                    ]
+                ),
+              )
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildAllPresentCards(int personIndex, int presentIndex, List presents) {
 
     Color _presentCardColor;
-    if (arrayPersonCardValues[personIndex].presents[presentIndex].bought) {
+    if (presents[presentIndex].bought) {
       _presentCardColor = Colors.lightGreen;
     }
     else {
@@ -223,39 +354,68 @@ class _MyMainPageState extends State<MyMainPage>
       child: InkWell(
         splashColor: Colors.lightGreenAccent,
         onTap: () {
-          _editBirthdayPresent(personIndex, presentIndex);
+          _editPresent(personIndex, presentIndex, presents);
         },
         child: SizedBox(
           width: 300,
-          height: 50,
-          child: Container(
-            padding: const EdgeInsets.all(15.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(arrayPersonCardValues[personIndex].presents[presentIndex].presentName + ': '),
-                Text('\$' + arrayPersonCardValues[personIndex].presents[presentIndex].amount.toString()),
-                Text('Mark as Bought?'),
-                Checkbox(
-                    value: arrayPersonCardValues[personIndex].presents[presentIndex].bought,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        arrayPersonCardValues[personIndex].presents[presentIndex].bought = value;
-                      });
-                    },
-                ),
-                Icon(Icons.more_vert_sharp),
-              ],
+            child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
+            scrollDirection: Axis.vertical,
+              child: Container(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          presents[presentIndex].presentName.toUpperCase(),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        Icon(Icons.more_vert_sharp),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                            '\$' + presents[presentIndex].amount.toStringAsFixed(2),
+                            style: TextStyle(
+                              fontSize: 18,
+                            )
+                        ),
+                        Row(
+                            children: [
+                              Text('Mark as Bought?'),
+                              Checkbox(
+                                value: presents[presentIndex].bought,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    presents[presentIndex].bought = value;
+                                  });
+                                },
+                              ),
+                            ],
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              ),
             ),
-          ),
         ),
       ),
     );
   }
 
-  Widget buildAllPersonCards(int personIndex) {
+  Widget buildAllBirthdayPersonCards(int personIndex) {
     // Convert your date string to DateTime
-    DateTime dateTime = arrayPersonCardValues[personIndex].birthDate;
+    DateTime dateTime = arrayBirthdayPersonCardValues[personIndex].birthDate;
     // Format the date in the desired format (MM/dd/yyyy)
     String formattedDate = DateFormat('MM/dd/yyyy').format(dateTime);
 
@@ -278,39 +438,61 @@ class _MyMainPageState extends State<MyMainPage>
               child: Column(
                   mainAxisSize: MainAxisSize.min, // Set mainAxisSize to min
                   mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            arrayBirthdayPersonCardValues[personIndex].name.toUpperCase(),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 25,
+                            ),
+                          ),
+                          Icon(Icons.more_vert_sharp),
+                        ]
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Birthday: ' + formattedDate,
+                        ),
+                        Text(
+                            'Days Left: ' + daysUntilDate(arrayBirthdayPersonCardValues[personIndex].birthDate).toString(),
+                        ),
+                      ],
+                    ),
+                    Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text(arrayPersonCardValues[personIndex].name),
-                            Text(formattedDate),
-                            Text('Presents: '),
+                            Text('Max Budget: \$' + arrayBirthdayPersonCardValues[personIndex].budget.toStringAsFixed(2)),
+                            Text('Present Total: ' + calcTotalPresentValue(arrayBirthdayPersonCardValues[personIndex].presents).toStringAsFixed(2)),
                           ],
                         ),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text('Max Budget: \$' + arrayPersonCardValues[personIndex].budget.toString()),
-                            Text('Present Total: ' + calcTotalPresentValue(personIndex).toString()),
-                            Text('Budget Left: ' + calcBudgetLeft(personIndex).toString()),
-                          ],
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Icon(Icons.more_vert_sharp),
-                            Text('Days Left: ' + daysUntilDate(personIndex).toString()),
+                            returnBudgetLeft(calcBudgetLeft(arrayBirthdayPersonCardValues, personIndex)),
                           ],
                         ),
                       ],
                     ),
+                    Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('Presents: '),
+                      ],
+                    ),
                     ...List.generate(
-                      arrayPersonCardValues[personIndex].presents.length,
-                          (presentIndex) => buildAllPresentCards(personIndex, presentIndex),
+                      arrayBirthdayPersonCardValues[personIndex].presents.length,
+                          (presentIndex) => buildAllPresentCards(personIndex, presentIndex, arrayBirthdayPersonCardValues[personIndex].presents),
                     ),
                     Card(
                       elevation: 5,
@@ -330,7 +512,7 @@ class _MyMainPageState extends State<MyMainPage>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.add),
-                                Text(' Add another Present'),
+                                Text(' Add A Present'),
                               ],
                             ),
                           ),
@@ -348,9 +530,110 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
   }
+
+  Widget buildAllChristmasPersonCards(int personIndex) {
+    return Card(
+      elevation: 5,
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        splashColor: Colors.green,
+        onTap: () {
+          _editChristmasPerson(personIndex);
+        },
+        child: SizedBox(
+          width: 350,
+          child: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            child: Container(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                    mainAxisSize: MainAxisSize.min, // Set mainAxisSize to min
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              arrayChristmasPersonCardValues[personIndex].name.toUpperCase(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 25,
+                              ),
+                            ),
+                            Icon(Icons.more_vert_sharp),
+                          ]
+                      ),
+                      Divider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text('Max Budget: \$' + arrayChristmasPersonCardValues[personIndex].budget.toString()),
+                              Text('Present Total: ' + calcTotalPresentValue(arrayChristmasPersonCardValues[personIndex].presents).toString()),
+                            ],
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              returnBudgetLeft(calcBudgetLeft(arrayChristmasPersonCardValues, personIndex)),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Divider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text('Presents: '),
+                        ],
+                      ),
+                      ...List.generate(
+                        arrayChristmasPersonCardValues[personIndex].presents.length,
+                            (presentIndex) => buildAllPresentCards(personIndex, presentIndex, arrayChristmasPersonCardValues[personIndex].presents),
+                      ),
+                      Card(
+                        elevation: 5,
+                        clipBehavior: Clip.hardEdge,
+                        color: Colors.lightGreen,
+                        child: InkWell(
+                          splashColor: Colors.lightGreenAccent,
+                          onTap: () {
+                            _addChristmasPresent(personIndex);
+                          },
+                          child: SizedBox(
+                            width: 300,
+                            height: 50,
+                            child: Container(
+                              padding: const EdgeInsets.all(15.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add),
+                                  Text(' Add another Present'),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    ]
+
+                )
+
+
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class PersonCardValues{
+class BirthdayPersonCardValues{
   String name = '';
   String get personName {
     return name;
@@ -382,7 +665,35 @@ class PersonCardValues{
   void set personPresents(List presents) {
     this.presents = presents;
   }
-  PersonCardValues({required this.name, required this.budget, required this.birthDate, required this.presents});
+  BirthdayPersonCardValues({required this.name, required this.budget, required this.birthDate, required this.presents});
+
+}
+
+class ChristmasPersonCardValues{
+  String name = '';
+  String get personName {
+    return name;
+  }
+  void set personName(String name) {
+    this.name = name;
+  }
+
+  double budget= 0;
+  double get personBudget {
+    return budget;
+  }
+  void set personBudget(double budget) {
+    this.budget = budget;
+  }
+
+  var presents = [];
+  List get personPresents {
+    return presents;
+  }
+  void set personPresents(List presents) {
+    this.presents = presents;
+  }
+  ChristmasPersonCardValues({required this.name, required this.budget, required this.presents});
 
 }
 
@@ -421,4 +732,11 @@ class PresentCardValues{
 
   PresentCardValues({required this.presentName, required this.amount, required this.bought, required this.comments});
 
+}
+
+class AllValues{
+  List birthdayValues = [];
+  List christmasValues = [];
+
+  AllValues({required this.birthdayValues, required this.christmasValues});
 }
