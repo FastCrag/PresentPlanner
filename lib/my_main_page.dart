@@ -24,6 +24,7 @@ class _MyMainPageState extends State<MyMainPage>
   var arrayChristmasPersonCardValues = [];
   late AllValues allValues = AllValues(birthdayValues: arrayBirthdayPersonCardValues, christmasValues: arrayChristmasPersonCardValues);
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +54,58 @@ class _MyMainPageState extends State<MyMainPage>
                 arrayBirthdayPersonCardValues.length,
                     (index) => buildAllBirthdayPersonCards(index),
                 ),
-                addNewBirthdayCard()
+                addNewBirthdayCard(),
+                Card(
+                  elevation: 5,
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    splashColor: Colors.green,
+                    onTap: () {
+                      _printValue;
+                    },
+                    child: SizedBox(
+                      width: 350,
+                      height: 75,
+                      child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.person_add),
+                                  Center(child: Text(' test ')),
+                                ]
+                            ),
+                          )
+                      ),
+                    ),
+                  ),
+                ),
+
+                Card(
+                  elevation: 5,
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    splashColor: Colors.green,
+                    onTap: () {
+                      _printValue;
+                    },
+                    child: SizedBox(
+                      width: 350,
+                      height: 75,
+                      child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.person_add),
+                                  Center(child: Text(' test ')),
+                                ]
+                            ),
+                          )
+                      ),
+                    ),
+                  ),
+                ),
               ]
             ),
           ),
@@ -71,7 +123,8 @@ class _MyMainPageState extends State<MyMainPage>
                     arrayChristmasPersonCardValues.length,
                         (index) => buildAllChristmasPersonCards(index),
                   ),
-                  addNewChristmasCard()
+                  addNewChristmasCard(),
+
                 ]
             ),
           ),
@@ -89,6 +142,10 @@ class _MyMainPageState extends State<MyMainPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+  }
+
+  void _printValue() {
+    print('hello');
   }
 
   @override
@@ -631,6 +688,11 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
   }
+}
+
+class TestingValues{
+  String name = 'THIS IS THE TEST NAME';
+  TestingValues({required this.name});
 }
 
 class BirthdayPersonCardValues{
