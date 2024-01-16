@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:present_planner/add_Birthday_Person.dart';
 import 'package:present_planner/add_Present.dart';
@@ -7,6 +9,8 @@ import 'package:present_planner/add_Christmas_Person.dart';
 import 'package:present_planner/edit_Christmas_Person.dart';
 import 'package:intl/intl.dart';
 import 'dart:core';
+import 'dart:developer';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyMainPage extends StatefulWidget {
   const MyMainPage({super.key});
@@ -61,7 +65,7 @@ class _MyMainPageState extends State<MyMainPage>
                   child: InkWell(
                     splashColor: Colors.green,
                     onTap: () {
-                      _printValue;
+                      _printValue1();
                     },
                     child: SizedBox(
                       width: 350,
@@ -72,7 +76,7 @@ class _MyMainPageState extends State<MyMainPage>
                             child: Row(
                                 children: <Widget>[
                                   Icon(Icons.person_add),
-                                  Center(child: Text(' test ')),
+                                  Center(child: Text(' test1 ')),
                                 ]
                             ),
                           )
@@ -87,7 +91,7 @@ class _MyMainPageState extends State<MyMainPage>
                   child: InkWell(
                     splashColor: Colors.green,
                     onTap: () {
-                      _printValue;
+                      _printValue2();
                     },
                     child: SizedBox(
                       width: 350,
@@ -98,7 +102,7 @@ class _MyMainPageState extends State<MyMainPage>
                             child: Row(
                                 children: <Widget>[
                                   Icon(Icons.person_add),
-                                  Center(child: Text(' test ')),
+                                  Center(child: Text(' test2 ')),
                                 ]
                             ),
                           )
@@ -144,8 +148,27 @@ class _MyMainPageState extends State<MyMainPage>
     _tabController = TabController(length: 2, vsync: this);
   }
 
-  void _printValue() {
-    print('hello');
+  void _printValue1() async {
+    TestingValues testingValues = TestingValues(name: "ed2");
+
+    String json = jsonEncode(testingValues);
+
+    print(json);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('data', json);
+  }
+
+  void _printValue2() async {
+    //String json = '{"name":"ed2","blah":42,"blah2":4.22222}';
+
+    final prefs = await SharedPreferences.getInstance();
+    String? json = prefs.getString('data');
+
+    Map<String, dynamic> jsonMap = jsonDecode(json ?? "");
+    TestingValues testingValues = TestingValues.fromJson(jsonMap);
+
+    print(testingValues.name);
   }
 
   @override
@@ -346,7 +369,7 @@ class _MyMainPageState extends State<MyMainPage>
       child: InkWell(
         splashColor: Colors.green,
         onTap: () {
-          _addBirthdayPerson();
+          //_addBirthdayPerson();
         },
         child: SizedBox(
           width: 350,
@@ -692,7 +715,21 @@ class _MyMainPageState extends State<MyMainPage>
 
 class TestingValues{
   String name = 'THIS IS THE TEST NAME';
+  int blah = 42;
+  double blah2 = 4.22222;
   TestingValues({required this.name});
+
+
+  TestingValues.fromJson(Map<String, dynamic> json)
+      : name = json['name'] as String,
+        blah = json['blah'] as int,
+        blah2 = json['blah2'] as double;
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'blah': blah,
+    'blah2': blah2
+  };
 }
 
 class BirthdayPersonCardValues{
