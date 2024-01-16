@@ -126,8 +126,6 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
     String newName = _nameController.text;
     double newBudget = double.parse(_budgetController.text);
     List newList = [];
-
-    // Assuming you have a way to get the selected date as DateTime
     DateTime selectedDate = DateTime.parse(_dateController.text);
 
     widget.arrayPersonCardValues.add(new BirthdayPersonCardValues(name: newName, budget: newBudget, birthDate: selectedDate, presents: newList));

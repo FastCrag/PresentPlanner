@@ -24,9 +24,7 @@ class MyMainPage extends StatefulWidget {
 class _MyMainPageState extends State<MyMainPage>
     with TickerProviderStateMixin {
   late final TabController _tabController;
-  var arrayBirthdayPersonCardValues = [];
-  var arrayChristmasPersonCardValues = [];
-  late AllValues allValues = AllValues(birthdayValues: arrayBirthdayPersonCardValues, christmasValues: arrayChristmasPersonCardValues);
+  late AllValues allValues = AllValues(arrayBirthdayPersonCardValues: [], arrayChristmasPersonCardValues: []);
 
 
   @override
@@ -55,7 +53,7 @@ class _MyMainPageState extends State<MyMainPage>
             child: Column(
               children: [
                 ...List.generate(
-                arrayBirthdayPersonCardValues.length,
+                  allValues.arrayBirthdayPersonCardValues.length,
                     (index) => buildAllBirthdayPersonCards(index),
                 ),
                 addNewBirthdayCard(),
@@ -65,7 +63,7 @@ class _MyMainPageState extends State<MyMainPage>
                   child: InkWell(
                     splashColor: Colors.green,
                     onTap: () {
-                      _printValue1();
+                      _saveValues(allValues);
                     },
                     child: SizedBox(
                       width: 350,
@@ -91,7 +89,7 @@ class _MyMainPageState extends State<MyMainPage>
                   child: InkWell(
                     splashColor: Colors.green,
                     onTap: () {
-                      _printValue2();
+                      _loadValues();
                     },
                     child: SizedBox(
                       width: 350,
@@ -124,7 +122,7 @@ class _MyMainPageState extends State<MyMainPage>
                     ),
                   ),
                   ...List.generate(
-                    arrayChristmasPersonCardValues.length,
+                    allValues.arrayChristmasPersonCardValues.length,
                         (index) => buildAllChristmasPersonCards(index),
                   ),
                   addNewChristmasCard(),
@@ -146,12 +144,16 @@ class _MyMainPageState extends State<MyMainPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // _loadValues().then((loadedValues) {
+    //   setState(() {
+    //     allValues = loadedValues;
+    //   });
+    // });
   }
 
-  void _printValue1() async {
-    TestingValues testingValues = TestingValues(name: "ed2");
+  void _saveValues(allValues) async {
 
-    String json = jsonEncode(testingValues);
+    String json = jsonEncode(allValues);
 
     print(json);
 
@@ -159,16 +161,22 @@ class _MyMainPageState extends State<MyMainPage>
     await prefs.setString('data', json);
   }
 
-  void _printValue2() async {
+  Future<AllValues> _loadValues() async {
     //String json = '{"name":"ed2","blah":42,"blah2":4.22222}';
 
     final prefs = await SharedPreferences.getInstance();
     String? json = prefs.getString('data');
 
-    Map<String, dynamic> jsonMap = jsonDecode(json ?? "");
-    TestingValues testingValues = TestingValues.fromJson(jsonMap);
-
-    print(testingValues.name);
+    if (json != null && json.isNotEmpty) {
+      Map<String, dynamic> jsonMap = jsonDecode(json);
+      AllValues loadedValues = AllValues.fromJson(jsonMap);
+      print(loadedValues);
+      return loadedValues;
+    } else {
+      // If no data is stored, return a default instance of AllValues
+      print('No data has been stored');
+      return AllValues(arrayBirthdayPersonCardValues: [], arrayChristmasPersonCardValues: []);
+    }
   }
 
   @override
@@ -205,13 +213,13 @@ class _MyMainPageState extends State<MyMainPage>
   }
 
   Future<void> _editPresent(personIndex, presentIndex, presents) async {
-    if (arrayBirthdayPersonCardValues[personIndex].presents == presents) {
+    if (allValues.arrayBirthdayPersonCardValues[personIndex].presents == presents) {
       var result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => EditPresentPage(
-            presentToEdit: arrayBirthdayPersonCardValues[personIndex].presents[presentIndex],
-            arrayPresentCardValues: arrayBirthdayPersonCardValues[personIndex].presents,
+            presentToEdit: allValues.arrayBirthdayPersonCardValues[personIndex].presents[presentIndex],
+            arrayPresentCardValues: allValues.arrayBirthdayPersonCardValues[personIndex].presents,
             presentIndex: presentIndex,
           ),
         ),
@@ -227,8 +235,8 @@ class _MyMainPageState extends State<MyMainPage>
         context,
         MaterialPageRoute(
           builder: (context) => EditPresentPage(
-            presentToEdit: arrayChristmasPersonCardValues[personIndex].presents[presentIndex],
-            arrayPresentCardValues: arrayChristmasPersonCardValues[personIndex].presents,
+            presentToEdit: allValues.arrayChristmasPersonCardValues[personIndex].presents[presentIndex],
+            arrayPresentCardValues: allValues.arrayChristmasPersonCardValues[personIndex].presents,
             presentIndex: presentIndex,
           ),
         ),
@@ -247,7 +255,7 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => AddBirthdayPersonPage(
-          arrayPersonCardValues: arrayBirthdayPersonCardValues,
+          arrayPersonCardValues: allValues.arrayBirthdayPersonCardValues,
         ),
       ),
     );
@@ -263,7 +271,7 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => EditBirthdayPersonPage(
-          arrayPersonCardValues: arrayBirthdayPersonCardValues,
+          arrayPersonCardValues: allValues.arrayBirthdayPersonCardValues,
           personIndex: personIndex,
         ),
       ),
@@ -281,7 +289,7 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => AddPresentPage(
-          arrayPresentCardValues: arrayBirthdayPersonCardValues[personIndex].presents,
+          arrayPresentCardValues: allValues.arrayBirthdayPersonCardValues[personIndex].presents,
         ),
       ),
     );
@@ -298,7 +306,7 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => AddChristmasPersonPage(
-          arrayPersonCardValues: arrayChristmasPersonCardValues,
+          arrayPersonCardValues: allValues.arrayChristmasPersonCardValues,
         ),
       ),
     );
@@ -314,7 +322,7 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => EditChristmasPersonPage(
-          arrayPersonCardValues: arrayChristmasPersonCardValues,
+          arrayPersonCardValues: allValues.arrayChristmasPersonCardValues,
           personIndex: personIndex,
         ),
       ),
@@ -332,7 +340,7 @@ class _MyMainPageState extends State<MyMainPage>
       context,
       MaterialPageRoute(
         builder: (context) => AddPresentPage(
-          arrayPresentCardValues: arrayChristmasPersonCardValues[personIndex].presents,
+          arrayPresentCardValues: allValues.arrayChristmasPersonCardValues[personIndex].presents,
         ),
       ),
     );
@@ -369,7 +377,7 @@ class _MyMainPageState extends State<MyMainPage>
       child: InkWell(
         splashColor: Colors.green,
         onTap: () {
-          //_addBirthdayPerson();
+          _addBirthdayPerson();
         },
         child: SizedBox(
           width: 350,
@@ -495,7 +503,7 @@ class _MyMainPageState extends State<MyMainPage>
 
   Widget buildAllBirthdayPersonCards(int personIndex) {
     // Convert your date string to DateTime
-    DateTime dateTime = arrayBirthdayPersonCardValues[personIndex].birthDate;
+    DateTime dateTime = allValues.arrayBirthdayPersonCardValues[personIndex].birthDate;
     // Format the date in the desired format (MM/dd/yyyy)
     String formattedDate = DateFormat('MM/dd/yyyy').format(dateTime);
 
@@ -524,7 +532,7 @@ class _MyMainPageState extends State<MyMainPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            arrayBirthdayPersonCardValues[personIndex].name.toUpperCase(),
+                            allValues.arrayBirthdayPersonCardValues[personIndex].name.toUpperCase(),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 25,
@@ -540,7 +548,7 @@ class _MyMainPageState extends State<MyMainPage>
                           'Birthday: ' + formattedDate,
                         ),
                         Text(
-                            'Days Left: ' + daysUntilDate(arrayBirthdayPersonCardValues[personIndex].birthDate).toString(),
+                            'Days Left: ' + daysUntilDate(allValues.arrayBirthdayPersonCardValues[personIndex].birthDate).toString(),
                         ),
                       ],
                     ),
@@ -551,14 +559,14 @@ class _MyMainPageState extends State<MyMainPage>
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text('Max Budget: \$' + arrayBirthdayPersonCardValues[personIndex].budget.toStringAsFixed(2)),
-                            Text('Present Total: ' + calcTotalPresentValue(arrayBirthdayPersonCardValues[personIndex].presents).toStringAsFixed(2)),
+                            Text('Max Budget: \$' + allValues.arrayBirthdayPersonCardValues[personIndex].budget.toStringAsFixed(2)),
+                            Text('Present Total: ' + calcTotalPresentValue(allValues.arrayBirthdayPersonCardValues[personIndex].presents).toStringAsFixed(2)),
                           ],
                         ),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            returnBudgetLeft(calcBudgetLeft(arrayBirthdayPersonCardValues, personIndex)),
+                            returnBudgetLeft(calcBudgetLeft(allValues.arrayBirthdayPersonCardValues, personIndex)),
                           ],
                         ),
                       ],
@@ -571,8 +579,8 @@ class _MyMainPageState extends State<MyMainPage>
                       ],
                     ),
                     ...List.generate(
-                      arrayBirthdayPersonCardValues[personIndex].presents.length,
-                          (presentIndex) => buildAllPresentCards(personIndex, presentIndex, arrayBirthdayPersonCardValues[personIndex].presents),
+                      allValues.arrayBirthdayPersonCardValues[personIndex].presents.length,
+                          (presentIndex) => buildAllPresentCards(personIndex, presentIndex, allValues.arrayBirthdayPersonCardValues[personIndex].presents),
                     ),
                     Card(
                       elevation: 5,
@@ -636,7 +644,7 @@ class _MyMainPageState extends State<MyMainPage>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              arrayChristmasPersonCardValues[personIndex].name.toUpperCase(),
+                              allValues.arrayChristmasPersonCardValues[personIndex].name.toUpperCase(),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 25,
@@ -652,14 +660,14 @@ class _MyMainPageState extends State<MyMainPage>
                           Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Text('Max Budget: \$' + arrayChristmasPersonCardValues[personIndex].budget.toString()),
-                              Text('Present Total: ' + calcTotalPresentValue(arrayChristmasPersonCardValues[personIndex].presents).toString()),
+                              Text('Max Budget: \$' + allValues.arrayChristmasPersonCardValues[personIndex].budget.toString()),
+                              Text('Present Total: ' + calcTotalPresentValue(allValues.arrayChristmasPersonCardValues[personIndex].presents).toString()),
                             ],
                           ),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              returnBudgetLeft(calcBudgetLeft(arrayChristmasPersonCardValues, personIndex)),
+                              returnBudgetLeft(calcBudgetLeft(allValues.arrayChristmasPersonCardValues, personIndex)),
                             ],
                           ),
                         ],
@@ -672,8 +680,8 @@ class _MyMainPageState extends State<MyMainPage>
                         ],
                       ),
                       ...List.generate(
-                        arrayChristmasPersonCardValues[personIndex].presents.length,
-                            (presentIndex) => buildAllPresentCards(personIndex, presentIndex, arrayChristmasPersonCardValues[personIndex].presents),
+                        allValues.arrayChristmasPersonCardValues[personIndex].presents.length,
+                            (presentIndex) => buildAllPresentCards(personIndex, presentIndex, allValues.arrayChristmasPersonCardValues[personIndex].presents),
                       ),
                       Card(
                         elevation: 5,
@@ -766,6 +774,20 @@ class BirthdayPersonCardValues{
   }
   BirthdayPersonCardValues({required this.name, required this.budget, required this.birthDate, required this.presents});
 
+  BirthdayPersonCardValues.fromJson(Map<String, dynamic> json)
+      : name = json['name'] as String,
+        budget = json['budget'] as double,
+        birthDate = json['birthDate'] != null
+            ? DateTime.parse(json['birthDate'] as String)
+            : DateTime.now(),
+        presents = json['presents'] as List;
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'budget': budget,
+    'birthDate': birthDate.toIso8601String(),
+    'presents': presents
+  };
 }
 
 class ChristmasPersonCardValues{
@@ -794,6 +816,16 @@ class ChristmasPersonCardValues{
   }
   ChristmasPersonCardValues({required this.name, required this.budget, required this.presents});
 
+  ChristmasPersonCardValues.fromJson(Map<String, dynamic> json)
+      : name = json['name'] as String,
+        budget = json['budget'] as double,
+        presents = json['presents'] as List;
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'budget': budget,
+    'presents': presents
+  };
 }
 
 class PresentCardValues{
@@ -831,11 +863,33 @@ class PresentCardValues{
 
   PresentCardValues({required this.presentName, required this.amount, required this.bought, required this.comments});
 
+  PresentCardValues.fromJson(Map<String, dynamic> json)
+      : presentName = json['presentName'] as String,
+        amount = json['amount'] as double,
+        bought = json['bought'] as bool,
+        comments = json['comments'] as String;
+
+  Map<String, dynamic> toJson() => {
+    'presentName': presentName,
+    'amount': amount,
+    'bought': bought,
+    'comments': comments
+  };
 }
 
 class AllValues{
-  List birthdayValues = [];
-  List christmasValues = [];
+  List arrayBirthdayPersonCardValues = [];
+  List arrayChristmasPersonCardValues = [];
 
-  AllValues({required this.birthdayValues, required this.christmasValues});
+  AllValues({required this.arrayBirthdayPersonCardValues, required this.arrayChristmasPersonCardValues});
+
+  AllValues.fromJson(Map<String, dynamic> json)
+      : arrayBirthdayPersonCardValues = json['arrayBirthdayPersonCardValues'] as List,
+        arrayChristmasPersonCardValues = json['arrayChristmasPersonCardValues'] as List;
+
+  Map<String, dynamic> toJson() => {
+    'arrayBirthdayPersonCardValues': arrayBirthdayPersonCardValues.map((value) => value.toJson()).toList(),
+    'arrayChristmasPersonCardValues': arrayChristmasPersonCardValues.map((value) => value.toJson()).toList()
+
+  };
 }
