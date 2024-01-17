@@ -26,6 +26,54 @@ class _MyMainPageState extends State<MyMainPage>
   late final TabController _tabController;
   late AllValues allValues = AllValues(arrayBirthdayPersonCardValues: [], arrayChristmasPersonCardValues: []);
 
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    AllValues loadedValues = await _loadValues();
+
+    // Check if loadedValues is not null, then assign it to allValues
+    if (loadedValues != null) {
+      setState(() {
+        allValues = loadedValues;
+      });
+    }
+
+    // Now you can build everything using the loaded data
+    build(context);
+  }
+
+  void _saveValues(AllValues allValues) async {
+
+    String json = jsonEncode(allValues);
+
+    print(json);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('data', json);
+  }
+
+  Future<AllValues> _loadValues() async {
+    //String json = '{"name":"ed2","blah":42,"blah2":4.22222}';
+
+    final prefs = await SharedPreferences.getInstance();
+    String? json = prefs.getString('data');
+
+    if (json != null && json.isNotEmpty) {
+      Map<String, dynamic> jsonMap = jsonDecode(json);
+      AllValues loadedValues = AllValues.fromJson(jsonMap);
+      print(loadedValues);
+      return loadedValues;
+    } else {
+      // If no data is stored, return a default instance of AllValues
+      print('No data has been stored');
+      return AllValues(arrayBirthdayPersonCardValues: [], arrayChristmasPersonCardValues: []);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,57 +105,6 @@ class _MyMainPageState extends State<MyMainPage>
                     (index) => buildAllBirthdayPersonCards(index),
                 ),
                 addNewBirthdayCard(),
-                Card(
-                  elevation: 5,
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    splashColor: Colors.green,
-                    onTap: () {
-                      _saveValues(allValues);
-                    },
-                    child: SizedBox(
-                      width: 350,
-                      height: 75,
-                      child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                            child: Row(
-                                children: <Widget>[
-                                  Icon(Icons.person_add),
-                                  Center(child: Text(' test1 ')),
-                                ]
-                            ),
-                          )
-                      ),
-                    ),
-                  ),
-                ),
-
-                Card(
-                  elevation: 5,
-                  clipBehavior: Clip.hardEdge,
-                  child: InkWell(
-                    splashColor: Colors.green,
-                    onTap: () {
-                      _loadValues();
-                    },
-                    child: SizedBox(
-                      width: 350,
-                      height: 75,
-                      child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                            child: Row(
-                                children: <Widget>[
-                                  Icon(Icons.person_add),
-                                  Center(child: Text(' test2 ')),
-                                ]
-                            ),
-                          )
-                      ),
-                    ),
-                  ),
-                ),
               ]
             ),
           ),
@@ -140,44 +137,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
   }
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    // _loadValues().then((loadedValues) {
-    //   setState(() {
-    //     allValues = loadedValues;
-    //   });
-    // });
-  }
 
-  void _saveValues(allValues) async {
-
-    String json = jsonEncode(allValues);
-
-    print(json);
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('data', json);
-  }
-
-  Future<AllValues> _loadValues() async {
-    //String json = '{"name":"ed2","blah":42,"blah2":4.22222}';
-
-    final prefs = await SharedPreferences.getInstance();
-    String? json = prefs.getString('data');
-
-    if (json != null && json.isNotEmpty) {
-      Map<String, dynamic> jsonMap = jsonDecode(json);
-      AllValues loadedValues = AllValues.fromJson(jsonMap);
-      print(loadedValues);
-      return loadedValues;
-    } else {
-      // If no data is stored, return a default instance of AllValues
-      print('No data has been stored');
-      return AllValues(arrayBirthdayPersonCardValues: [], arrayChristmasPersonCardValues: []);
-    }
-  }
 
   @override
   void dispose() {
@@ -185,7 +145,7 @@ class _MyMainPageState extends State<MyMainPage>
     super.dispose();
   }
 
-  double calcTotalPresentValue(List presents) {
+  double calcTotalPresentValue(List<PresentCardValues> presents) {
     double totalAmount = 0;
     for (var i = 0; i < presents.length; i++) {
       totalAmount += presents[i].presentAmount;
@@ -193,7 +153,12 @@ class _MyMainPageState extends State<MyMainPage>
     return totalAmount;
   }
 
-  double calcBudgetLeft(List arrayCardValues, personIndex) {
+  double calcBudgetLeftBirthday(List<BirthdayPersonCardValues> arrayCardValues, personIndex) {
+    double budgetLeft = 0;
+    budgetLeft = (arrayCardValues[personIndex].budget) - (calcTotalPresentValue(arrayCardValues[personIndex].presents));
+    return budgetLeft;
+  }
+  double calcBudgetLeftChristmas(List<ChristmasPersonCardValues> arrayCardValues, personIndex) {
     double budgetLeft = 0;
     budgetLeft = (arrayCardValues[personIndex].budget) - (calcTotalPresentValue(arrayCardValues[personIndex].presents));
     return budgetLeft;
@@ -225,6 +190,7 @@ class _MyMainPageState extends State<MyMainPage>
         ),
       );
       if (result != null) {
+        _saveValues(allValues);
         setState(() {
           build;
         });
@@ -242,6 +208,7 @@ class _MyMainPageState extends State<MyMainPage>
         ),
       );
       if (result != null) {
+        _saveValues(allValues);
         setState(() {
           build;
         });
@@ -260,6 +227,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
     if (result != null) {
+      _saveValues(allValues);
       setState(() {
         build;
       });
@@ -277,6 +245,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
     if (result != null) {
+      _saveValues(allValues);
       setState(() {
         build;
       });
@@ -294,6 +263,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
     if (result != null) {
+      _saveValues(allValues);
       setState(() {
         build;
       });
@@ -328,6 +298,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
     if (result != null) {
+      _saveValues(allValues);
       setState(() {
         build;
       });
@@ -345,6 +316,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
     if (result != null) {
+      _saveValues(allValues);
       setState(() {
         build;
       });
@@ -426,10 +398,11 @@ class _MyMainPageState extends State<MyMainPage>
     );
   }
 
-  Widget buildAllPresentCards(int personIndex, int presentIndex, List presents) {
+  Widget buildAllPresentCards(int personIndex, int presentIndex, List<PresentCardValues> presents) {
 
     Color _presentCardColor;
-    if (presents[presentIndex].bought) {
+    bool? bought = presents[presentIndex].bought;
+    if (bought != null && bought) {
       _presentCardColor = Colors.lightGreen;
     }
     else {
@@ -486,6 +459,7 @@ class _MyMainPageState extends State<MyMainPage>
                                   setState(() {
                                     presents[presentIndex].bought = value;
                                   });
+                                  _saveValues(allValues);
                                 },
                               ),
                             ],
@@ -566,7 +540,7 @@ class _MyMainPageState extends State<MyMainPage>
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            returnBudgetLeft(calcBudgetLeft(allValues.arrayBirthdayPersonCardValues, personIndex)),
+                            returnBudgetLeft(calcBudgetLeftBirthday(allValues.arrayBirthdayPersonCardValues, personIndex)),
                           ],
                         ),
                       ],
@@ -667,7 +641,7 @@ class _MyMainPageState extends State<MyMainPage>
                           Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              returnBudgetLeft(calcBudgetLeft(allValues.arrayChristmasPersonCardValues, personIndex)),
+                              returnBudgetLeft(calcBudgetLeftChristmas(allValues.arrayChristmasPersonCardValues, personIndex)),
                             ],
                           ),
                         ],
@@ -765,11 +739,11 @@ class BirthdayPersonCardValues{
     this.birthDate = birthDate;
   }
 
-  var presents = [];
-  List get personPresents {
+  List<PresentCardValues> presents = [];
+  List<PresentCardValues> get personPresents {
     return presents;
   }
-  void set personPresents(List presents) {
+  void set personPresents(List<PresentCardValues> presents) {
     this.presents = presents;
   }
   BirthdayPersonCardValues({required this.name, required this.budget, required this.birthDate, required this.presents});
@@ -780,7 +754,7 @@ class BirthdayPersonCardValues{
         birthDate = json['birthDate'] != null
             ? DateTime.parse(json['birthDate'] as String)
             : DateTime.now(),
-        presents = json['presents'] as List;
+        presents = List<PresentCardValues>.from((json['presents'] as List).map((value) => PresentCardValues.fromJson(value)));
 
   Map<String, dynamic> toJson() => {
     'name': name,
@@ -807,11 +781,11 @@ class ChristmasPersonCardValues{
     this.budget = budget;
   }
 
-  var presents = [];
-  List get personPresents {
+  List<PresentCardValues> presents = [];
+  List<PresentCardValues> get personPresents {
     return presents;
   }
-  void set personPresents(List presents) {
+  void set personPresents(List<PresentCardValues> presents) {
     this.presents = presents;
   }
   ChristmasPersonCardValues({required this.name, required this.budget, required this.presents});
@@ -819,7 +793,7 @@ class ChristmasPersonCardValues{
   ChristmasPersonCardValues.fromJson(Map<String, dynamic> json)
       : name = json['name'] as String,
         budget = json['budget'] as double,
-        presents = json['presents'] as List;
+        presents = List<PresentCardValues>.from((json['presents'] as List).map((value) => PresentCardValues.fromJson(value)));
 
   Map<String, dynamic> toJson() => {
     'name': name,
@@ -878,14 +852,14 @@ class PresentCardValues{
 }
 
 class AllValues{
-  List arrayBirthdayPersonCardValues = [];
-  List arrayChristmasPersonCardValues = [];
+  List<BirthdayPersonCardValues> arrayBirthdayPersonCardValues = [];
+  List<ChristmasPersonCardValues> arrayChristmasPersonCardValues = [];
 
   AllValues({required this.arrayBirthdayPersonCardValues, required this.arrayChristmasPersonCardValues});
 
   AllValues.fromJson(Map<String, dynamic> json)
-      : arrayBirthdayPersonCardValues = json['arrayBirthdayPersonCardValues'] as List,
-        arrayChristmasPersonCardValues = json['arrayChristmasPersonCardValues'] as List;
+      : arrayBirthdayPersonCardValues = List<BirthdayPersonCardValues>.from((json['arrayBirthdayPersonCardValues'] as List).map((value) => BirthdayPersonCardValues.fromJson(value))),
+        arrayChristmasPersonCardValues = List<ChristmasPersonCardValues>.from((json['arrayChristmasPersonCardValues'] as List).map((value) => ChristmasPersonCardValues.fromJson(value)));
 
   Map<String, dynamic> toJson() => {
     'arrayBirthdayPersonCardValues': arrayBirthdayPersonCardValues.map((value) => value.toJson()).toList(),

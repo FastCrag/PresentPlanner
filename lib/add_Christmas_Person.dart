@@ -86,7 +86,7 @@ class _AddChristmasPersonPageState extends State<AddChristmasPersonPage> {
   void saveClicked() {
     String newName = _nameController.text;
     double newBudget = double.parse(_budgetController.text);
-    List newList = [];
+    List<PresentCardValues> newList = [];
 
     widget.arrayPersonCardValues.add(new ChristmasPersonCardValues(name: newName, budget: newBudget, presents: newList));
 

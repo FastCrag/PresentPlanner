@@ -24,7 +24,7 @@ class _EditChristmasPersonPageState extends State<EditChristmasPersonPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Edit Birthday'),
+        title: const Text('Edit Person'),
       ),
       body: Center(
         child: Container(

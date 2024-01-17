@@ -125,7 +125,7 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
   void saveClicked() {
     String newName = _nameController.text;
     double newBudget = double.parse(_budgetController.text);
-    List newList = [];
+    List<PresentCardValues> newList = [];
     DateTime selectedDate = DateTime.parse(_dateController.text);
 
     widget.arrayPersonCardValues.add(new BirthdayPersonCardValues(name: newName, budget: newBudget, birthDate: selectedDate, presents: newList));
