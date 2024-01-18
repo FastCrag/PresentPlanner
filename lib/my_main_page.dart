@@ -131,7 +131,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: "0",
-        onPressed: _addBirthdayPerson,
+        onPressed: _addPerson,
         tooltip: 'Add a Person',
         child: const Icon(Icons.person_add),
       ),
@@ -216,6 +216,14 @@ class _MyMainPageState extends State<MyMainPage>
     }
   }
 
+  void _addPerson() async {
+    if (_tabController.index == 0) {
+      _addBirthdayPerson();
+    }
+    else {
+      _addChristmasPerson();
+    }
+  }
   void _addBirthdayPerson() async {
     // Use the Future returned by Navigator.push
     var result = await Navigator.push(
@@ -281,6 +289,7 @@ class _MyMainPageState extends State<MyMainPage>
       ),
     );
     if (result != null) {
+      _saveValues(allValues);
       setState(() {
         build;
       });
