@@ -14,9 +14,9 @@ class AddPresentPage extends StatefulWidget {
 }
 
 class _AddPresentPageState extends State<AddPresentPage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _commentController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController(text: "");
+  final TextEditingController _amountController = TextEditingController(text: "");
+  final TextEditingController _commentController = TextEditingController(text: "");
   bool? isChecked = false;
 
   @override
@@ -121,7 +121,6 @@ class _AddPresentPageState extends State<AddPresentPage> {
   void saveClicked() {
     String newName = _nameController.text;
     double newAmount;
-    print('THIS IS THE VALUE' + _amountController.toString());
     if (_amountController.text == ''){
       newAmount = 0;
     }

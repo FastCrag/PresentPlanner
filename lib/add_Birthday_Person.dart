@@ -27,7 +27,7 @@ class _AddBirthdayPersonPageState extends State<AddBirthdayPersonPage> {
       ),
       body: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 const Text(
                   'Please Fill Out All the Information',

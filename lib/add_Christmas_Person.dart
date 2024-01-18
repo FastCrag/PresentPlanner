@@ -14,8 +14,8 @@ class AddChristmasPersonPage extends StatefulWidget {
 }
 
 class _AddChristmasPersonPageState extends State<AddChristmasPersonPage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _budgetController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController(text: "");
+  final TextEditingController _budgetController = TextEditingController(text: "");
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class _AddChristmasPersonPageState extends State<AddChristmasPersonPage> {
         ),
         body: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               const Text(
                 'Please Fill Out All the Information',
@@ -85,7 +85,13 @@ class _AddChristmasPersonPageState extends State<AddChristmasPersonPage> {
 
   void saveClicked() {
     String newName = _nameController.text;
-    double newBudget = double.parse(_budgetController.text);
+    double newBudget;
+    if (_budgetController.text == "") {
+      newBudget = 0.0;
+    }
+    else {
+      newBudget = double.parse(_budgetController.text);
+    }
     List<PresentCardValues> newList = [];
 
     widget.arrayPersonCardValues.add(new ChristmasPersonCardValues(name: newName, budget: newBudget, presents: newList));

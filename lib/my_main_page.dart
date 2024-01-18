@@ -178,7 +178,7 @@ class _MyMainPageState extends State<MyMainPage>
   }
 
   Future<void> _editPresent(personIndex, presentIndex, presents) async {
-    if (allValues.arrayBirthdayPersonCardValues[personIndex].presents == presents) {
+    if (allValues.arrayBirthdayPersonCardValues.length > personIndex && allValues.arrayBirthdayPersonCardValues[personIndex].presents == presents) {
       var result = await Navigator.push(
         context,
         MaterialPageRoute(
